@@ -10,7 +10,8 @@ void main() async {
   await SessionPreferences.init();
   runApp(MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => SessionProvider())
+        ChangeNotifierProvider(create: (context) => SessionProvider()),
+        ChangeNotifierProvider(create: (context) => LoginFormProvider())
       ],
       child: const MyApp(),
     )

@@ -1,6 +1,5 @@
 // ignore_for_file: file_names
-
-import 'package:productos_app/src/providers/session_provider.dart';
+import 'package:productos_app/src/providers/providers.dart';
 import 'package:productos_app/src/ui/pages/pages.dart';
 import 'package:productos_app/src/widgets/widgtes.dart';
 import 'package:provider/provider.dart';
@@ -27,14 +26,9 @@ class _LoginFormState extends State<LoginForm> {
   late FocusNode emailFnode;
   late FocusNode passwordFnode;
 
-  void emailControllerListener(){
-    print('email value--> ${emailController.text}');
-  }
-
   @override
   void initState() {
     super.initState();
-    emailController.addListener(() => emailControllerListener());
     emailFnode =  FocusNode();
     passwordFnode =  FocusNode();
   }
@@ -50,7 +44,7 @@ class _LoginFormState extends State<LoginForm> {
   @override
   Widget build(BuildContext context) {
 
-    final SessionProvider sessionProvider =  Provider.of<SessionProvider>(context);
+    final LoginFormProvider loginFormProvider =  Provider.of<LoginFormProvider>(context);
 
     return SingleChildScrollView(
       child: Column(
@@ -65,7 +59,7 @@ class _LoginFormState extends State<LoginForm> {
            width: widget.size.width,
            height: widget.size.height * 0.40,
            child:Form(
-            key: sessionProvider.formKey,
+            key: loginFormProvider.formKey,
              child: Column(
               children: <Widget>[
                 Text(
@@ -92,27 +86,29 @@ class _LoginFormState extends State<LoginForm> {
                     hintText: 'Email',
                   
                   ),
+                  onFieldSubmitted: (value) {
+                    emailFnode.unfocus();
+                    FocusScope.of(context).requestFocus(passwordFnode);
+                  },
+                  onChanged: (value) => loginFormProvider.email = value,
                   validator: (value) {
-                      if(value == ''){
-                        return 'This field is required';
-                      }else{
-                        return null ;
-                      }
-
+                     String pattern = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+                     RegExp regExp  =  RegExp(pattern);
+                     return regExp.hasMatch(value ?? '')
+                            ? null
+                            : 'Is not an email';
                   },
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
-                // const SizedBox(height: 15,),
                 const Spacer(),
                  TextFormField(
                   focusNode: passwordFnode,
-                  //enabled: isEnablePass,
                   cursorColor: Colors.deepPurple.shade700,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    labelStyle: TextStyle(color: isEnablePass ? Colors.deepPurple.shade700 : Colors.grey.shade400 ),
+                    labelStyle: TextStyle(color: Colors.deepPurple.shade700  ),
                     hintText: 'Password',
-                    prefixIcon: Icon(Icons.password, color: isEnablePass ? Colors.deepPurple.shade700 :  Colors.grey.shade400,),
+                    prefixIcon: Icon(Icons.password, color: Colors.deepPurple.shade700),
                     suffixIcon: IconButton(
                       icon:  Icon(
                         showPassword ? Icons.remove_red_eye_outlined : Icons.remove_red_eye,
@@ -123,13 +119,16 @@ class _LoginFormState extends State<LoginForm> {
                           showPassword = !showPassword;
                         });
                       },
-                    )
+                    ),
                   ),
-                  //controller: controller,
                   keyboardType: TextInputType.text,
                   obscureText: showPassword,
                   obscuringCharacter: '*',
                   autovalidateMode: AutovalidateMode.onUserInteraction,
+                  onFieldSubmitted: (value) {
+                    print('Doing the petition...');
+                  },
+                  onChanged: (value) => loginFormProvider.password =  value,
                   validator: (value) {
                       if(value == ''){
                         return 'This field is required';
@@ -148,14 +147,10 @@ class _LoginFormState extends State<LoginForm> {
                   textColor: Colors.white,
                   backgroundColor: Colors.purple.shade900,
                   onClick: (){
-                    
                     emailFnode.unfocus();
                     FocusScope.of(context).requestFocus(passwordFnode);
-                    setState(() {
-                      autoFocus = !autoFocus;
-                      // isEnableEmail= !isEnableEmail;
-                      // isEnablePass = !isEnablePass;
-                    });
+                    if(!loginFormProvider.isValidForm()) return;
+                    Navigator.pushReplacementNamed(context, 'home');
                   }
                 )
               ],
