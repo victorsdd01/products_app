@@ -6,7 +6,7 @@ import 'package:productos_app/src/ui/pages/pages.dart';
 class CustomButtom extends StatelessWidget {
   const CustomButtom({
     super.key,
-    required this.onClick,
+    this.onClick,
     this.borderRadius,
     this.width,
     this.height,
@@ -16,7 +16,7 @@ class CustomButtom extends StatelessWidget {
   });
 
 
-  final Function onClick;
+  final VoidCallback? onClick;
   final double? borderRadius;
   final double? width;
   final double? height;
@@ -30,7 +30,7 @@ class CustomButtom extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadius ??  0.0)
       ),
-      onPressed: () => onClick(),
+      onPressed: onClick,
       color:  backgroundColor ?? Colors.indigo.shade200,
       disabledColor: Colors.grey.shade500,
       minWidth: width != null ? width! * 10 : 0,
