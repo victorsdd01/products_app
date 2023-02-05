@@ -143,13 +143,15 @@ class _LoginFormState extends State<LoginForm> {
                   borderRadius: 10.0,
                   width: 20,
                   height: 50,
-                  text: 'Sign in',
+                  text: loginFormProvider.isLoading == true ? 'Wait...' : 'Sign in',
                   textColor: Colors.white,
                   backgroundColor: Colors.purple.shade900,
-                  onClick: (){
+                  onClick: loginFormProvider.isLoading ? null : () async {
                     emailFnode.unfocus();
                     FocusScope.of(context).requestFocus(passwordFnode);
+                    FocusScope.of(context).unfocus();
                     if(!loginFormProvider.isValidForm()) return;
+                    loginFormProvider.isLoading = true;
                     Navigator.pushReplacementNamed(context, 'home');
                   }
                 )
