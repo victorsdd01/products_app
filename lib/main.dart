@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:productos_app/src/providers/providers.dart';
 import 'package:productos_app/src/routes/routes.dart';
@@ -8,10 +9,12 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SessionPreferences.init();
-  runApp(MultiProvider(
+  runApp(
+    MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => SessionProvider()),
-        ChangeNotifierProvider(create: (context) => LoginFormProvider())
+        ChangeNotifierProvider(create: (context) => LoginFormProvider()),
+        ChangeNotifierProvider(create: (context) => ProductsProvider())
       ],
       child: const MyApp(),
     )
@@ -20,7 +23,6 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return  MaterialApp(
@@ -31,4 +33,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

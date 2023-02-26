@@ -1,4 +1,4 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:productos_app/src/ui/pages/pages.dart';
 
 class SessionPreferences{
 
@@ -7,7 +7,4 @@ class SessionPreferences{
   static Future<void> init() async{
     await SharedPreferences.getInstance();
   }
-
-  
-
 }
