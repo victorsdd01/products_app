@@ -14,4 +14,19 @@ class Products{
     required this.isAvailable,
   });
 
+  factory Products.fromMap(Map<String,dynamic> json ) => Products(
+    image: json['image'], 
+    price: json['price'], 
+    description: json['description'],
+    isAvailable: json['isAvailable']
+  );
+
+  Map<String,dynamic> topMap() => {
+    'image': image,
+    'price': price,
+    'description': description,
+    'isAvailable': isAvailable,
+  };
+
+
 }
