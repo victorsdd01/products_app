@@ -11,17 +11,21 @@ class ProductsProvider extends ChangeNotifier{
   bool isEnablePrice = false;
   String producName   = '';
   String producPrice  = '';
+  String productDescription = '';
   bool autoFocusProducName = true;
   bool disableButtom = false;
+  bool updateBottomDisabled = true;
   bool onClosingAlert = false;
 
   FocusNode productNamefn = FocusNode();
   FocusNode productPricefn = FocusNode();
+  FocusNode productDescriptionfn = FocusNode();
 
 
   bool get isAvailable => _isAvailable;
   String get getProductName => producName;
   String get getProductPrice => producPrice;
+  String get getProducDescription => productDescription;
   bool get getIsEnablePrice => isEnablePrice;
   bool get getAutoFocus => autoFocusProducName;
   bool get getOnClosingAlertValue => onClosingAlert;
@@ -34,6 +38,11 @@ class ProductsProvider extends ChangeNotifier{
 
   set setProductName(String value){
     producName = value;
+    notifyListeners();
+  }
+
+  set setProductDescription(String value){
+    productDescription = value;
     notifyListeners();
   }
 
@@ -54,6 +63,11 @@ class ProductsProvider extends ChangeNotifier{
 
   set setDisableButtom(bool value){
     disableButtom = value;
+    notifyListeners();
+  }
+
+  setUpdateBottomDisabled(bool value){
+    updateBottomDisabled =  value;
     notifyListeners();
   }
 
