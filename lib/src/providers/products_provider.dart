@@ -1,12 +1,9 @@
-
-
 import 'package:productos_app/src/ui/pages/pages.dart';
 
 class ProductsProvider extends ChangeNotifier{
 
   GlobalKey<FormState> productsFormKey =  GlobalKey<FormState>();
-  
-
+    
   bool _isAvailable = false;
   bool isEnablePrice = false;
   String producName   = '';
@@ -86,5 +83,4 @@ class ProductsProvider extends ChangeNotifier{
     setProducPrice = '';
     setIsAvailableSet = false;
   }
-
 }
