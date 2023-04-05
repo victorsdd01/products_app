@@ -56,5 +56,30 @@ class Alerts{
       ),
     );
   }
+  static Future<bool> deleteProductById(BuildContext context, ProductServices productServices, String id) async {
+    final result = await showDialog<bool>(
+      context: context, 
+      builder: (context) => AlertDialog(
+        title: const Text('Are you sure do you want to delete this product?'),
+        actions: [
+          CustomButtom(
+            text: 'cancel',
+            borderRadius: 10.0, 
+            backgroundColor: Colors.red, 
+            textColor: Colors.white,
+            onClick: () => Navigator.pop(context,false),
+          ),
+          CustomButtom(
+            text: 'ok',
+            borderRadius: 10.0, 
+            backgroundColor: Colors.green.shade400, 
+            textColor: Colors.white,
+            onClick: () async => await productServices.deleteProduct(id).then((value) => Navigator.pop(context,value))
+          ),
+        ],
+      )
+    );
+    return result!;
+  }
 
 }

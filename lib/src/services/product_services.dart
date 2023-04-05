@@ -81,15 +81,18 @@ class ProductServices extends ChangeNotifier {
     }
   }
 
-  Future<bool> deleteProduct(Products product) async {
+  Future<bool> deleteProduct(String id) async {
     try{
-      await dio.delete('$baseUrl/products/${product.id}.json',data: jsonEncode(product.topMap()));
-      final index = products.indexWhere((element) => element.id == product.id);
+      await dio.delete('$baseUrl/products/$id.json',data:{"id": id});
+      final index = products.indexWhere((element) => element.id == id);
       products.removeAt(index);
+      if(products.isEmpty){
+        _productListIsEmpty = true;
+      }
       notifyListeners();
       return true;
     }on Exception {
-      print("something wrong to delete ${product.id} product ❌");
+      print("something wrong to delete $id product ❌");
       return false;
     }
   }

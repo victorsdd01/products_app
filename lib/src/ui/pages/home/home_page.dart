@@ -306,40 +306,72 @@ class HomePage extends StatelessWidget {
                       child: Stack(
                         children:[
                           product.image != 'no image' 
-                          ? Container(
-                             clipBehavior: Clip.antiAlias,
-                             margin: const EdgeInsets.only(top: 10.0),
-                             decoration: BoxDecoration(
-                               borderRadius: BorderRadius.circular(10.0),
-                               boxShadow:const <BoxShadow>[
-                                 BoxShadow(color: Colors.white10)
-                               ]
-                             ),
-                             width: size.width *0.90,
-                             height: size.height * 0.30,
-                             child: Image.network(product.image, fit: BoxFit.cover),
-                          ) 
-                          : Container(
-                                  clipBehavior: Clip.antiAlias,
-                                  margin: const EdgeInsets.only(top: 10.0),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    color:  Colors.grey.shade500,
-                                    
-                                  ),
-                                  width: size.width *0.90,
-                                  height: size.height * 0.30,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.photo, color: Colors.grey.shade300,size: 60.0,),
-                                        Text('Select photo', style: TextStyle(color: Colors.grey.shade300),)
-                                      ],
-                                    ),
+                          ? Stack(
+                            children:[
+                              Container(
+                                 clipBehavior: Clip.antiAlias,
+                                 margin: const EdgeInsets.only(top: 10.0),
+                                 decoration: BoxDecoration(
+                                   borderRadius: BorderRadius.circular(10.0),
+                                   boxShadow:const <BoxShadow>[
+                                     BoxShadow(color: Colors.white10)
+                                   ]
+                                 ),
+                                 width: size.width *0.90,
+                                 height: size.height * 0.30,
+                                 child: Image.network(product.image, fit: BoxFit.cover),
+                              ),
+                              Positioned(
+                                  top: 10,
+                                  right: 0,
+                                  child: IconButton(
+                                        onPressed: () => Alerts.deleteProductById(context, productsServices, product.id!), 
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.black,
+                                          size: 20,
+                                        )
                                   )
-                            ),
+                                )
+                            ],
+                          ) 
+                          : Stack(
+                            children: [
+                                Container(
+                                      clipBehavior: Clip.antiAlias,
+                                      margin: const EdgeInsets.only(top: 10.0),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10.0),
+                                        color:  Colors.grey.shade500,
+                                        
+                                      ),
+                                      width: size.width *0.90,
+                                      height: size.height * 0.30,
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.photo, color: Colors.grey.shade300,size: 60.0,),
+                                            Text('Select photo', style: TextStyle(color: Colors.grey.shade300),)
+                                          ],
+                                        ),
+                                      )
+                                ),
+                                Positioned(
+                                  top: 10,
+                                  right: 0,
+                                  child: IconButton(
+                                        onPressed: () async => await Alerts.deleteProductById(context, productsServices, product.id!).then((value) => value ? Navigator.pop(context): null), 
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.white,
+                                          size: 20,
+                                        )
+                                  )
+                                )
+                              ],
+                          ),
                           Positioned(
                             top: 10,
                             left: 0,
