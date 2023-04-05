@@ -59,7 +59,7 @@ class ProductCard extends StatelessWidget {
               left: size.width  * 0.4,
               top: 0,
               child: Checkbox(
-                value: false, 
+                value: true, 
                 onChanged: (value){
                   print("value: $value");
                 }

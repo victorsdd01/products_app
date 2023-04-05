@@ -24,8 +24,8 @@ class HomePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 IconButton(
-                  onPressed: () => productService.setDeleteProduct = !productService.getDeleteProduct, 
-                  icon: const Icon(Icons.delete, color: Colors.white,size: 20,)
+                  onPressed: productService.productListIsEmpty ? null : () => Alerts.deleteAllProducts(context, productService), 
+                  icon: Icon(Icons.delete, color: productService.productListIsEmpty ? Colors.grey.shade400 : Colors.white,size: 20,)
                 )
               ],
             )
@@ -35,6 +35,10 @@ class HomePage extends StatelessWidget {
               ? const Center(
                   child: CircularProgressIndicator.adaptive()
                 )
+              : productService.productListIsEmpty 
+              ? const Center(
+                  child: Text('No data'),
+                )  
               : ListView.builder(
                     itemCount:productService.products.length,
                     itemBuilder: (context, index) {
@@ -63,49 +67,6 @@ class HomePage extends StatelessWidget {
                       );
                     },
                   ),
-        // body: FutureBuilder<List<Products>>(
-        //   future: productService.loadProducts(),
-        //   builder: (context, AsyncSnapshot<List<Products>> snapshot) {
-        //     if(snapshot.hasData){
-        //       return SafeArea(
-        //           child: ListView.builder(
-        //             itemCount: snapshot.data!.length,
-        //             itemBuilder: (context, index) {
-        //               final product =  snapshot.data![index];
-        //               return GestureDetector(
-        //                 onTap: () => seeProduct(size, product),
-        //                 onLongPress: () {
-        //                   product.image != 'no image' 
-        //                     ? showDialog(
-        //                           context: context, 
-        //                           builder: (context)=> Dialog(
-        //                             shape: RoundedRectangleBorder(
-        //                               borderRadius: BorderRadius.circular(10)
-        //                             ),
-        //                             child: Image.network(product.image)
-        //                         )
-        //                       )
-        //                     : showSnackBar();
-        //                 },
-        //                 child: ProductCard(
-        //                   image: product.image, 
-        //                   description: product.description, 
-        //                   isAvailable: product.isAvailable, 
-        //                   price: '\$${product.price}',
-        //                 ),
-        //               );
-        //             },
-        //           ),
-        //       );
-        //     } else if(snapshot.hasError){
-        //       return const Center(
-        //           child: Text('Something wrong!')
-        //         );
-        //     } else {
-        //       return const Center(child: CircularProgressIndicator.adaptive(),);
-        //     }
-        //   }
-        // ),
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.deepPurple.shade500,
           onPressed: (){
