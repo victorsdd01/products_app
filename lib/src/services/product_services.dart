@@ -1,6 +1,4 @@
-// ignore_for_file: unused_field
-
-
+// ignore_for_file: unused_field, prefer_final_fields
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -8,19 +6,30 @@ import 'package:productos_app/src/models/models.dart';
 import 'package:productos_app/src/ui/pages/pages.dart';
 
 class ProductServices extends ChangeNotifier {
+
   final String baseUrl = "https://productsapp-27b6d-default-rtdb.firebaseio.com";
   final Dio dio = Dio();
   final List<Products> products = [];
   bool _isLoading = false;
+  bool _deleteProduct = false;
   bool get isLoading => _isLoading;
+  bool get getDeleteProduct => _deleteProduct;
 
-  set setIsLoading (bool value) {
-     _isLoading = value;
-     notifyListeners();
+  set setDeleteProduct(bool value){
+    _deleteProduct = value;
+    notifyListeners();
+  }
+
+  ProductServices(){
+    loadProducts();
   }
 
   Future<List<Products>> loadProducts() async {
     try {
+
+      _isLoading = true;
+      notifyListeners();
+
       final response = await dio.get('$baseUrl/products.json');
       final Map<String, dynamic> productMap = response.data;
       productMap.forEach((key, value) {
@@ -28,6 +37,9 @@ class ProductServices extends ChangeNotifier {
         currentProduct.id = key;
         products.add(currentProduct);
       });
+
+      _isLoading = false;
+      notifyListeners();
       return products;
     } on Exception{
       print("something wrong to get all product list ❌");
@@ -40,10 +52,47 @@ class ProductServices extends ChangeNotifier {
         await dio.put('$baseUrl/products/${product.id}.json', data: jsonEncode(product.topMap()));
         final index = products.indexWhere((element) => element.id == product.id);
         products[index] = product;
+        notifyListeners();
         return true;
       } on Exception{
         print("something wrong trying to update the product ${product.id} ❌");
         return false;
       }
+  }
+
+  Future<bool> addNewProduct(Products product) async {
+    try{
+      final resp = await dio.post('$baseUrl/products.json', data: jsonEncode(product.topMap()));
+      product.id =  resp.data['name'];
+      products.addAll([product]);
+      notifyListeners();
+      return true;
+    }on Exception{
+      print("something wrong to add new product ❌");
+      return false;
+    }
+  }
+
+  Future<bool> deleteProduct(Products product)async {
+    try{
+      await dio.delete('$baseUrl/products/${product.id}.json',data: jsonEncode(product.topMap()));
+      final index = products.indexWhere((element) => element.id == product.id);
+      products.removeAt(index);
+      notifyListeners();
+      return true;
+    }on Exception {
+      print("something wrong to delete ${product.id} product ❌");
+      return false;
+    }
+  }
+
+  Future<bool> deleteAllProducts(Products product) async {
+    try{
+      await dio.delete('$baseUrl/products.json',);
+      return true;
+    }on Exception{
+      print("something wrong to delete all products ❌");
+      return false;
+    }
   }
 }

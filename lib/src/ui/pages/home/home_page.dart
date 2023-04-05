@@ -9,37 +9,38 @@ import 'package:productos_app/src/widgets/widgtes.dart';
 import 'package:provider/provider.dart';
 
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
     const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-
-
     @override
     Widget build(BuildContext context) {
-
-      final Size size = MediaQuery.of(context).size;
       final productService = Provider.of<ProductServices>(context);
+      final Size size = MediaQuery.of(context).size;
       return  Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.deepPurple.shade300,
           title: const Text('Products'),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: () => productService.setDeleteProduct = !productService.getDeleteProduct, 
+                  icon: const Icon(Icons.delete, color: Colors.white,size: 20,)
+                )
+              ],
+            )
+          ],
         ),
-        body: FutureBuilder<List<Products>>(
-          future: productService.loadProducts(),
-          builder: (context, AsyncSnapshot<List<Products>> snapshot) {
-            if(snapshot.hasData){
-              return SafeArea(
-                  child: ListView.builder(
-                    itemCount: snapshot.data!.length,
+        body: productService.isLoading 
+              ? const Center(
+                  child: CircularProgressIndicator.adaptive()
+                )
+              : ListView.builder(
+                    itemCount:productService.products.length,
                     itemBuilder: (context, index) {
-                      final product =  snapshot.data![index];
+                      final product =  productService.products[index];
                       return GestureDetector(
-                        onTap: () => seeProduct(size, product),
+                        onTap: () => seeProduct(size, product,context),
                         onLongPress: () {
                           product.image != 'no image' 
                             ? showDialog(
@@ -51,7 +52,7 @@ class _HomePageState extends State<HomePage> {
                                     child: Image.network(product.image)
                                 )
                               )
-                            : showSnackBar();
+                            : showSnackBar(context);
                         },
                         child: ProductCard(
                           image: product.image, 
@@ -62,16 +63,49 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                   ),
-              );
-            } else if(snapshot.hasError){
-              return const Center(
-                  child: Text('Something wrong!')
-                );
-            } else {
-              return const Center(child: CircularProgressIndicator.adaptive(),);
-            }
-          }
-        ),
+        // body: FutureBuilder<List<Products>>(
+        //   future: productService.loadProducts(),
+        //   builder: (context, AsyncSnapshot<List<Products>> snapshot) {
+        //     if(snapshot.hasData){
+        //       return SafeArea(
+        //           child: ListView.builder(
+        //             itemCount: snapshot.data!.length,
+        //             itemBuilder: (context, index) {
+        //               final product =  snapshot.data![index];
+        //               return GestureDetector(
+        //                 onTap: () => seeProduct(size, product),
+        //                 onLongPress: () {
+        //                   product.image != 'no image' 
+        //                     ? showDialog(
+        //                           context: context, 
+        //                           builder: (context)=> Dialog(
+        //                             shape: RoundedRectangleBorder(
+        //                               borderRadius: BorderRadius.circular(10)
+        //                             ),
+        //                             child: Image.network(product.image)
+        //                         )
+        //                       )
+        //                     : showSnackBar();
+        //                 },
+        //                 child: ProductCard(
+        //                   image: product.image, 
+        //                   description: product.description, 
+        //                   isAvailable: product.isAvailable, 
+        //                   price: '\$${product.price}',
+        //                 ),
+        //               );
+        //             },
+        //           ),
+        //       );
+        //     } else if(snapshot.hasError){
+        //       return const Center(
+        //           child: Text('Something wrong!')
+        //         );
+        //     } else {
+        //       return const Center(child: CircularProgressIndicator.adaptive(),);
+        //     }
+        //   }
+        // ),
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.deepPurple.shade500,
           onPressed: (){
@@ -203,6 +237,28 @@ class _HomePageState extends State<HomePage> {
                               },
                             ),
                           ),
+                          const SizedBox(height: 20,),
+                          Padding(
+                            padding: const EdgeInsets.only(left:8.0, right:8.0),
+                            child: TextFormField(
+                              autovalidateMode: AutovalidateMode.onUserInteraction,
+                              focusNode: productsProvider.productDescriptionfn,
+                              onChanged: (value) => productsProvider.setProductDescription = value,
+                              keyboardType: TextInputType.text,
+                              cursorColor: Colors.deepPurple.shade400,
+                              decoration: const InputDecoration(
+                                label: Text('Description'),
+                                hintText: 'Write a description',
+                              ),
+                              validator: (value) {
+                                if(value == ''){
+                                  return 'This field is required';
+                                }else{
+                                  return null ;
+                                }
+                              },
+                            ),
+                          ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
@@ -215,20 +271,27 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20,),
                           CustomButtom(
                             backgroundColor:productsProvider.disableButtom ? Colors.grey.shade300 : Colors.deepPurple.shade400,  
                             textColor: Colors.white,
                             text: 'Save',
                             borderRadius: 10.0,
-                            onClick: productsProvider.disableButtom ? null : () {
-                              print('name:${productsProvider.producName}');
-                              print('price:${productsProvider.producPrice}');
-                              print('available:${productsProvider.isAvailable}');
+                            onClick: productsProvider.disableButtom ? null : () async {
                               final result = productsProvider.validForm();
                               if(result){
-                                productsProvider.clearState();
-                                Navigator.pop(context);
+                                final resp = await productService.addNewProduct(
+                                  Products(
+                                    name: productsProvider.producName, 
+                                    image: "no image", 
+                                    price: double.parse(productsProvider.producPrice), 
+                                    description: productsProvider.productDescription, 
+                                    isAvailable: productsProvider.isAvailable
+                                  )
+                                );
+                                if(resp){
+                                  productsProvider.clearState();
+                                  Navigator.pop(context);
+                                }
                               }
                             },
                           ),
@@ -246,14 +309,14 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    void showSnackBar(){
+    void showSnackBar(BuildContext context){
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                                   content: Text('No image available',style: TextStyle(color: Colors.white),),
                                   backgroundColor: Colors.amber,
                                 )
                             );
     } 
-    void seeProduct(Size size, Products product){
+    void seeProduct(Size size, Products product, BuildContext context){
       showModalBottomSheet(
         enableDrag: true,
         isScrollControlled: true,
@@ -454,6 +517,7 @@ class _HomePageState extends State<HomePage> {
                            final upated = await productsServices.updateProduct(product);
                            if(upated){
                              Navigator.pop(context);
+                            //  productsProvider.clearState();
                            }
                          }
                       }

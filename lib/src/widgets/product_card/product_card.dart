@@ -1,4 +1,6 @@
+import 'package:productos_app/src/services/product_services.dart';
 import 'package:productos_app/src/ui/pages/pages.dart';
+import 'package:provider/provider.dart';
 
 class ProductCard extends StatelessWidget {
   const ProductCard({
@@ -19,6 +21,7 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
 
     final size =  MediaQuery.of(context).size;
+    final ProductServices productServices = Provider.of<ProductServices>(context);
     return SizedBox(
       width: size.width,
       height: size.height * 0.40,
@@ -52,6 +55,17 @@ class ProductCard extends StatelessWidget {
                 ),
               ),
             ),
+            productServices.getDeleteProduct ? Positioned(
+              left: size.width  * 0.4,
+              top: 0,
+              child: Checkbox(
+                value: false, 
+                onChanged: (value){
+                  print("value: $value");
+                }
+              )
+            )
+            : const SizedBox(),
             Positioned(
               left: 0,
               child: Container(
