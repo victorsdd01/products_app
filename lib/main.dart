@@ -20,7 +20,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => SessionProvider()),
         ChangeNotifierProvider(create: (context) => LoginFormProvider()),
         ChangeNotifierProvider(create: (context) => ProductsProvider()),
-        ChangeNotifierProvider(create: (context) => ProductServices(), lazy: true,)
+        ChangeNotifierProvider(create: (context) => ProductServices(), lazy: true,),
       ],
       child: const MyApp(),
     )

@@ -4,11 +4,11 @@ import 'dart:convert';
 class Products{
 
   // String id;
-  final String name;
-  final String image;
-  final double price;
-  final String description;
-  final bool isAvailable;
+  String name;
+  String image;
+  double price;
+  String description;
+  bool isAvailable;
   String? id;
 
 

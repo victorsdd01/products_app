@@ -1,6 +1,8 @@
 // ignore_for_file: unused_field
 
 
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:productos_app/src/models/models.dart';
 import 'package:productos_app/src/ui/pages/pages.dart';
@@ -31,5 +33,17 @@ class ProductServices extends ChangeNotifier {
       print("something wrong to get all product list ❌");
       return [];
     }
+  }
+
+    Future<bool> updateProduct(Products product) async {
+      try{
+        await dio.put('$baseUrl/products/${product.id}.json', data: jsonEncode(product.topMap()));
+        final index = products.indexWhere((element) => element.id == product.id);
+        products[index] = product;
+        return true;
+      } on Exception{
+        print("something wrong trying to update the product ${product.id} ❌");
+        return false;
+      }
   }
 }

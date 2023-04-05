@@ -1,5 +1,5 @@
 
-// ignore_for_file: avoid_returning_null_for_void
+// ignore_for_file: avoid_returning_null_for_void, use_build_context_synchronously
 
 import 'package:productos_app/src/models/models.dart';
 import 'package:productos_app/src/providers/providers.dart';
@@ -81,7 +81,12 @@ class _HomePageState extends State<HomePage> {
               isScrollControlled: true,
               useSafeArea: true,
               isDismissible: false,
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(10.0),topRight: Radius.circular(10.0))),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10.0),
+                  topRight: Radius.circular(10.0)
+                )
+              ),
               context: context, 
               builder: (context) => DraggableScrollableSheet(
                 expand: false,
@@ -248,7 +253,7 @@ class _HomePageState extends State<HomePage> {
                                 )
                             );
     } 
-    void seeProduct(Size size, Products products){
+    void seeProduct(Size size, Products product){
       showModalBottomSheet(
         enableDrag: true,
         isScrollControlled: true,
@@ -263,6 +268,7 @@ class _HomePageState extends State<HomePage> {
           minChildSize: 0.40,
           builder: (context, scrollController) {
             final ProductsProvider productsProvider =  Provider.of<ProductsProvider>(context);
+            final ProductServices productsServices =  Provider.of<ProductServices>(context);
             return SingleChildScrollView(
               physics: const NeverScrollableScrollPhysics(),
               child: Form(
@@ -275,7 +281,7 @@ class _HomePageState extends State<HomePage> {
                       },
                       child: Stack(
                         children:[
-                          products.image != 'no image' 
+                          product.image != 'no image' 
                           ? Container(
                              clipBehavior: Clip.antiAlias,
                              margin: const EdgeInsets.only(top: 10.0),
@@ -287,7 +293,7 @@ class _HomePageState extends State<HomePage> {
                              ),
                              width: size.width *0.90,
                              height: size.height * 0.30,
-                             child: Image.network(products.image, fit: BoxFit.cover),
+                             child: Image.network(product.image, fit: BoxFit.cover),
                           ) 
                           : Container(
                                   clipBehavior: Clip.antiAlias,
@@ -315,14 +321,8 @@ class _HomePageState extends State<HomePage> {
                             left: 0,
                             child: IconButton(
                               splashColor: Colors.transparent,
-                              onPressed: () {
-                                if(productsProvider.getProductName.isNotEmpty && productsProvider.getProductPrice.isNotEmpty){
-                                  Alerts.onClosing(context);
-                                } else{
-                                    Navigator.of(context).pop();
-                                  }
-                              }, 
-                              icon: const Icon(Icons.keyboard_arrow_left_outlined,color: Colors.white, size: 30,)
+                              onPressed: () => Navigator.pop(context),
+                              icon: Icon(Icons.keyboard_arrow_left_outlined,color: Colors.grey.shade500, size: 30,)
                             ),
                           ),
                         ],
@@ -332,7 +332,7 @@ class _HomePageState extends State<HomePage> {
                     Padding(
                       padding: const EdgeInsets.only(left:8.0, right: 8.0),
                       child: TextFormField(
-                        initialValue: products.name,
+                        initialValue: product.name,
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         focusNode: productsProvider.productNamefn,
                         autofocus: productsProvider.autoFocusProducName,
@@ -349,10 +349,10 @@ class _HomePageState extends State<HomePage> {
                         },
                         onChanged: (value) {
                           if(value.isNotEmpty){
-                            if(products.name != value){
+                            if(product.name != value){
                               productsProvider.setUpdateBottomDisabled(false);
                             }
-                            productsProvider.setProductName = value;
+                            product.name = value;
                           }
                         },
                         validator: (value){
@@ -369,17 +369,21 @@ class _HomePageState extends State<HomePage> {
                     Padding(
                       padding: const EdgeInsets.only(left:8.0, right:8.0),
                       child: TextFormField(
-                        initialValue: products.price.toString(),
+                        initialValue: product.price.toString(),
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         focusNode: productsProvider.productPricefn,
+                        onEditingComplete: () {
+                          productsProvider.productPricefn.unfocus();
+                          FocusScope.of(context).requestFocus(productsProvider.productDescriptionfn);
+                        },
                         onChanged: (value) {
-                          if(products.name != value){
+                          if(product.name != value){
                             productsProvider.setUpdateBottomDisabled(false);
                           }
-                          productsProvider.setProducPrice = value;
+                          product.price = value.isNotEmpty ? double.parse(value) : 0.0;
                         },
                         //enabled: productsProvider.isEnablePrice,
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         cursorColor: Colors.deepPurple.shade400,
                         decoration: const InputDecoration(
                           label: Text('Product price'),
@@ -399,16 +403,15 @@ class _HomePageState extends State<HomePage> {
                     Padding(
                       padding: const EdgeInsets.only(left:8.0, right:8.0),
                       child: TextFormField(
-                        initialValue: products.description,
+                        initialValue: product.description,
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         focusNode: productsProvider.productDescriptionfn,
                         onChanged: (value) {
-                          if(products.name != value){
+                          if(product.name != value){
                             productsProvider.setUpdateBottomDisabled(false);
                           }
-                          productsProvider.setProductDescription = value;
+                          product.description = value;
                         },
-                        //enabled: productsProvider.isEnablePrice,
                         keyboardType: TextInputType.multiline,
                         minLines: 1,
                         maxLines: 3,
@@ -418,7 +421,7 @@ class _HomePageState extends State<HomePage> {
                           hintText: 'Product description',
                         ),
                         validator: (value) {
-                          if(value == ''){
+                          if(value!.isEmpty){
                             WidgetsBinding.instance.addPostFrameCallback((_) => productsProvider.setUpdateBottomDisabled(true));
                             return 'This field is required';
                           }else{
@@ -432,8 +435,11 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         const Text('Available'),
                         Switch.adaptive(
-                          value: products.isAvailable, 
-                          onChanged: (value) => null,                   
+                          value: product.isAvailable, 
+                          onChanged: (value) {
+                            product.isAvailable = value;
+                            productsProvider.setIsAvailableSet= value;
+                          },                   
                         ),
                       ],
                     ),
@@ -443,11 +449,13 @@ class _HomePageState extends State<HomePage> {
                       textColor: Colors.white,
                       text: 'Update',
                       borderRadius: 10.0,
-                      onClick: productsProvider.updateBottomDisabled ? null : (){
-                        final resp = productsProvider.validForm();
-                        if(resp) {
-                          print('updating...');
-                        }
+                      onClick: productsProvider.updateBottomDisabled ? null : () async {
+                         if(productsProvider.validForm()){
+                           final upated = await productsServices.updateProduct(product);
+                           if(upated){
+                             Navigator.pop(context);
+                           }
+                         }
                       }
                     ),
                     const SizedBox(height: 20,),
