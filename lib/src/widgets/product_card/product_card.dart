@@ -37,22 +37,24 @@ class ProductCard extends StatelessWidget {
               child: SizedBox(
                 width: double.infinity,
                 height: double.infinity,
-                child: FadeInImage.assetNetwork(
-                  fit: BoxFit.cover,
-                  placeholder: '', 
-                  image: image,
-                  imageErrorBuilder: (context, error, stackTrace) => Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children:  [
-                      Text('Something wrong trying to load the image',style: TextStyle(color: Colors.grey.shade500),),
-                      Icon(Icons.image_not_supported_rounded,color: Colors.grey.shade500,)
-                    ],
+                child: image.contains("/Users") 
+                ? Image.asset(image, fit: BoxFit.cover,) 
+                : FadeInImage.assetNetwork(
+                    fit: BoxFit.cover,
+                    placeholder: '', 
+                    image: image,
+                    imageErrorBuilder: (context, error, stackTrace) => Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children:  [
+                        Text('Something wrong trying to load the image',style: TextStyle(color: Colors.grey.shade500),),
+                        Icon(Icons.image_not_supported_rounded,color: Colors.grey.shade500,)
+                      ],
+                    ),
+                    placeholderErrorBuilder: (context, error, stackTrace)=> const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    )
                   ),
-                  placeholderErrorBuilder: (context, error, stackTrace)=> const Center(
-                    child: CircularProgressIndicator.adaptive(),
-                  )
-                ),
               ),
             ),
             productServices.getDeleteProduct ? Positioned(

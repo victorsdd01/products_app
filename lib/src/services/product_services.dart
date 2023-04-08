@@ -1,7 +1,9 @@
 // ignore_for_file: unused_field, prefer_final_fields
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:productos_app/src/models/models.dart';
 import 'package:productos_app/src/ui/pages/pages.dart';
 
@@ -10,7 +12,8 @@ class ProductServices extends ChangeNotifier {
   final String baseUrl = "https://productsapp-27b6d-default-rtdb.firebaseio.com";
   final Dio dio = Dio();
   List<Products> products = [];
-  final List<String> productsId = [];
+  List<String> productsId = [];
+  File? selectedImage;
   bool _isLoading = true;
   bool _deleteProduct = false;
   bool _productListIsEmpty = false;
@@ -20,6 +23,10 @@ class ProductServices extends ChangeNotifier {
 
   set setDeleteProduct(bool value){
     _deleteProduct = value;
+    notifyListeners();
+  }
+  set setSelectedImage(File? value){
+    selectedImage = value;
     notifyListeners();
   }
 
@@ -107,6 +114,37 @@ class ProductServices extends ChangeNotifier {
     }on Exception{
       print("something wrong to delete all products ❌");
       return false;
+    }
+  }
+
+  Future<void> putImageFromGallery() async {
+    try{
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if(image != null){
+        selectedImage = File(image.path);
+        notifyListeners();
+        print("image: $selectedImage");
+      }
+    }on Exception {
+      print("something wrong trying to select an image from gallery adding a new project ❌");
+    }
+  }
+
+  Future<void> getImageFromGallery(Products product) async {
+    try{
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if(image != null){
+        selectedImage = File(image.path);
+        product.image = selectedImage!.path;
+        await dio.put('$baseUrl/products/${product.id}.json',data: jsonEncode(product.topMap()));
+        final index = products.indexWhere((element) => element.id == product.id);
+        products[index].image = selectedImage!.path;
+        notifyListeners();
+      }
+    }on Exception catch(e){
+      print("something wrong to get image from gallery ❌ $e");
     }
   }
 }

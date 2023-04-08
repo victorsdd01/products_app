@@ -9,9 +9,7 @@ class AppRoutes{
       
       'login' : (context) => const LoginPage(),
       'home'  : (context) => const HomePage(),
+      'test'  : (context) => const TestPage(),
       
     };
-
-
-
 }
