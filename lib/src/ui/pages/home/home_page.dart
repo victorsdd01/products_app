@@ -69,9 +69,8 @@ class HomePage extends StatelessWidget {
                   ),
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.deepPurple.shade500,
-          onPressed: (){
-
-            showModalBottomSheet(
+          onPressed: () async {
+            await showModalBottomSheet(
               enableDrag: true,
               isScrollControlled: true,
               useSafeArea: true,
@@ -83,13 +82,7 @@ class HomePage extends StatelessWidget {
                 )
               ),
               context: context, 
-              builder: (context) => DraggableScrollableSheet(
-                expand: false,
-                initialChildSize: 0.80,
-                maxChildSize: 1,
-                minChildSize: 0.40,
-                builder: (context, scrollController) {
-                
+              builder: (context) {
                   final ProductsProvider productsProvider =  Provider.of<ProductsProvider>(context);
                   return SingleChildScrollView(
                     physics: const NeverScrollableScrollPhysics(),
@@ -98,11 +91,22 @@ class HomePage extends StatelessWidget {
                       child: Column(
                         children: [
                           GestureDetector(
-                            onTap: () {
-                              print('open gallery...');
-                            },
+                            onTap: () async => await productService.putImageFromGallery(),
                             child: Stack(
                               children:[
+                                (productService.selectedImage) != null 
+                                ? 
+                                Container(
+                                  clipBehavior: Clip.antiAlias,
+                                  margin: const EdgeInsets.only(top: 10.0),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10.0),        
+                                  ),
+                                  width: size.width *0.90,
+                                  height: size.height * 0.30,
+                                  child: Image.asset(productService.selectedImage!.path, fit: BoxFit.cover,)
+                                ) 
+                                :
                                 Container(
                                   clipBehavior: Clip.antiAlias,
                                   margin: const EdgeInsets.only(top: 10.0),
@@ -243,7 +247,7 @@ class HomePage extends StatelessWidget {
                                 final resp = await productService.addNewProduct(
                                   Products(
                                     name: productsProvider.producName, 
-                                    image: "no image", 
+                                    image: (productService.selectedImage?.path) != null ? productService.selectedImage!.path : "no image", 
                                     price: double.parse(productsProvider.producPrice), 
                                     description: productsProvider.productDescription, 
                                     isAvailable: productsProvider.isAvailable
@@ -251,6 +255,7 @@ class HomePage extends StatelessWidget {
                                 );
                                 if(resp){
                                   productsProvider.clearState();
+                                  productService.setSelectedImage = null;
                                   Navigator.pop(context);
                                 }
                               }
@@ -261,8 +266,7 @@ class HomePage extends StatelessWidget {
                       )
                     ),
                   );
-                },
-              )
+              }
             );
           },
           child: const Icon(Icons.add)
@@ -277,8 +281,8 @@ class HomePage extends StatelessWidget {
                                 )
                             );
     } 
-    void seeProduct(Size size, Products product, BuildContext context){
-      showModalBottomSheet(
+    void seeProduct(Size size, Products product, BuildContext context) async {
+      await showModalBottomSheet(
         enableDrag: true,
         isScrollControlled: true,
         useSafeArea: true,
@@ -300,9 +304,7 @@ class HomePage extends StatelessWidget {
                 child: Column(
                   children: [
                     GestureDetector(
-                      onTap: () {
-                        print('open gallery...');
-                      },
+                      onTap: () async => await productsServices.getImageFromGallery(product),
                       child: Stack(
                         children:[
                           product.image != 'no image' 
@@ -319,7 +321,9 @@ class HomePage extends StatelessWidget {
                                  ),
                                  width: size.width *0.90,
                                  height: size.height * 0.30,
-                                 child: Image.network(product.image, fit: BoxFit.cover),
+                                 child: product.image.contains("/Users") 
+                                          ? Image.asset(product.image, fit: BoxFit.cover,) 
+                                          : Image.network(product.image, fit: BoxFit.cover),
                               ),
                               Positioned(
                                   top: 10,
@@ -510,7 +514,7 @@ class HomePage extends StatelessWidget {
                            final upated = await productsServices.updateProduct(product);
                            if(upated){
                              Navigator.pop(context);
-                            //  productsProvider.clearState();
+                             productsServices.setSelectedImage = null;
                            }
                          }
                       }
