@@ -1,22 +1,45 @@
 
-// ignore_for_file: avoid_returning_null_for_void, use_build_context_synchronously
+// ignore_for_file: avoid_returning_null_for_void, use_build_context_synchronously, void_checks
 
 import 'package:productos_app/src/models/models.dart';
 import 'package:productos_app/src/providers/providers.dart';
+import 'package:productos_app/src/services/auth_service.dart';
 import 'package:productos_app/src/services/product_services.dart';
 import 'package:productos_app/src/ui/pages/pages.dart';
 import 'package:productos_app/src/widgets/widgtes.dart';
 import 'package:provider/provider.dart';
 
-
+enum MenuItems{
+  logout("Logout");
+  final String item;
+  const MenuItems(this.item);
+}
 class HomePage extends StatelessWidget {
     const HomePage({super.key});
     @override
     Widget build(BuildContext context) {
       final productService = Provider.of<ProductServices>(context);
+      final AuthService authService =  Provider.of<AuthService>(context);
       final Size size = MediaQuery.of(context).size;
       return  Scaffold(
         appBar: AppBar(
+          leading: PopupMenuButton(
+            onSelected: (value) async => value == MenuItems.logout 
+            ? await Alerts.logOut(context, authService).then((value) {
+              switch (value) {
+                case true:
+                  Navigator.pushReplacementNamed(context, "login");
+                  break;
+              }
+            })
+            : null,
+            itemBuilder: (_) => [
+                PopupMenuItem<MenuItems>(
+                value: MenuItems.logout,
+                child: Text(MenuItems.logout.item),
+              )
+            ]
+          ),
           backgroundColor: Colors.deepPurple.shade300,
           title: const Text('Products'),
           actions: [
@@ -26,7 +49,8 @@ class HomePage extends StatelessWidget {
                 IconButton(
                   onPressed: productService.productListIsEmpty ? null : () => Alerts.deleteAllProducts(context, productService), 
                   icon: Icon(Icons.delete, color: productService.productListIsEmpty ? Colors.grey.shade400 : Colors.white,size: 20,)
-                )
+                ),
+
               ],
             )
           ],
