@@ -4,12 +4,13 @@ import 'package:productos_app/src/ui/pages/pages.dart';
 
 class AppRoutes{
 
-    static const String initialRoute= 'home';
+    static const String initialRoute= 'login';
     static Map<String, Widget Function(BuildContext)> routes = {
       
-      'login' : (context) => const LoginPage(),
-      'home'  : (context) => const HomePage(),
-      'test'  : (context) => const TestPage(),
+      'login'    : (_) => const LoginPage(),
+      'register' : (_) => const RegisterUser(),
+      'home'     : (_) => const HomePage(),
+      'test'     : (_) => const TestPage(),
       
     };
 }

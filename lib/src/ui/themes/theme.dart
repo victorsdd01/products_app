@@ -8,7 +8,6 @@ class AppTheme{
     return ThemeData.light().copyWith(
       scaffoldBackgroundColor: Colors.grey.shade300,
       inputDecorationTheme:  InputDecorationTheme(
-        
         labelStyle: TextStyle(color: Colors.deepPurple.shade700),
         hintStyle: TextStyle(color: Colors.grey.shade400),
         prefixIconColor: Colors.deepPurple.shade700,

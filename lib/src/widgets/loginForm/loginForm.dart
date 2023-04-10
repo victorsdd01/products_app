@@ -1,10 +1,13 @@
-// ignore_for_file: file_names
+// ignore_for_file: file_names, dead_code
+import 'package:flutter/gestures.dart';
+import 'package:productos_app/src/models/user.dart';
 import 'package:productos_app/src/providers/providers.dart';
+import 'package:productos_app/src/services/auth_service.dart';
 import 'package:productos_app/src/ui/pages/pages.dart';
 import 'package:productos_app/src/widgets/widgtes.dart';
 import 'package:provider/provider.dart';
 
-class LoginForm extends StatefulWidget {
+class LoginForm extends StatelessWidget {
   const LoginForm({
     super.key,
     required this.size,
@@ -13,38 +16,10 @@ class LoginForm extends StatefulWidget {
   final Size size;
 
   @override
-  State<LoginForm> createState() => _LoginFormState();
-}
-
-class _LoginFormState extends State<LoginForm> {
-
-  final TextEditingController emailController =  TextEditingController();
-  late bool showPassword = true;
-  late bool autoFocus = true;
-  late bool isEnableEmail = true;
-  late bool isEnablePass  = false;
-  late FocusNode emailFnode;
-  late FocusNode passwordFnode;
-
-  @override
-  void initState() {
-    super.initState();
-    emailFnode =  FocusNode();
-    passwordFnode =  FocusNode();
-  }
-
-  @override
-  void dispose() {
-    emailController.dispose();
-    emailFnode.dispose();
-    passwordFnode.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
 
     final LoginFormProvider loginFormProvider =  Provider.of<LoginFormProvider>(context);
+    final AuthService authService = Provider.of<AuthService>(context);
 
     return SingleChildScrollView(
       child: Column(
@@ -56,8 +31,8 @@ class _LoginFormState extends State<LoginForm> {
               borderRadius: BorderRadius.circular(12.0)
             ),
            margin: const  EdgeInsets.only(left:10.0, right: 10.0),
-           width: widget.size.width,
-           height: widget.size.height * 0.40,
+           width: size.width,
+           height: size.height * 0.40,
            child:Form(
             key: loginFormProvider.formKey,
              child: Column(
@@ -74,23 +49,32 @@ class _LoginFormState extends State<LoginForm> {
                 const Spacer(),
                 TextFormField(
                   //enabled: isEnableEmail,
-                  focusNode: emailFnode,
+                  focusNode: loginFormProvider.emailFnode,
                   textInputAction: TextInputAction.next,
                   cursorColor: Colors.deepPurple.shade700,
-                  autofocus: true,
+                  autofocus: loginFormProvider.autoFocus,
                   keyboardType: TextInputType.text,
                   decoration:  InputDecoration(
                     labelText: 'Email',
-                    labelStyle: TextStyle(color: isEnableEmail ? Colors.deepPurple.shade700 : Colors.grey.shade400 ),
-                    prefixIcon: Icon(Icons.email, color: isEnableEmail ? Colors.deepPurple.shade700 : Colors.grey.shade400,),
+                    labelStyle: TextStyle(color: loginFormProvider.isEnableEmail ? Colors.deepPurple.shade700 : Colors.grey.shade400 ),
+                    prefixIcon: Icon(Icons.email, color: loginFormProvider.isEnableEmail ? Colors.deepPurple.shade700 : Colors.grey.shade400,),
                     hintText: 'Email',
-                  
+                    errorText: authService.validEmail ? null : 'Incorrect email',
+                    // enabledBorder: authService.validEmail
+                    // ? OutlineInputBorder(
+                    //     borderSide: BorderSide(color: Colors.green.shade300,),
+                    //     borderRadius: BorderRadius.circular(20)
+                    //   )
+                    // : null
                   ),
                   onFieldSubmitted: (value) {
-                    emailFnode.unfocus();
-                    FocusScope.of(context).requestFocus(passwordFnode);
+                    loginFormProvider.emailFnode.unfocus();
+                    FocusScope.of(context).requestFocus(loginFormProvider.passwordFnode);
                   },
-                  onChanged: (value) => loginFormProvider.email = value,
+                  onChanged: (value) {
+                    loginFormProvider.email = value;
+                    if(!authService.validEmail) authService.validEmail = true;
+                  },
                   validator: (value) {
                      String pattern = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
                      RegExp regExp  =  RegExp(pattern);
@@ -102,33 +86,36 @@ class _LoginFormState extends State<LoginForm> {
                 ),
                 const Spacer(),
                  TextFormField(
-                  focusNode: passwordFnode,
+                  focusNode: loginFormProvider.passwordFnode,
                   cursorColor: Colors.deepPurple.shade700,
                   decoration: InputDecoration(
+                    errorText: authService.validPassword ? null : 'Incorrect password',
                     labelText: 'Password',
                     labelStyle: TextStyle(color: Colors.deepPurple.shade700  ),
                     hintText: 'Password',
                     prefixIcon: Icon(Icons.password, color: Colors.deepPurple.shade700),
+                    // enabledBorder: authService.validPassword 
+                    // ? OutlineInputBorder(
+                    //   borderSide: BorderSide(color: Colors.green.shade300,),
+                    //   borderRadius: BorderRadius.circular(20)
+                    // )
+                    // : null,
                     suffixIcon: IconButton(
                       icon:  Icon(
-                        showPassword ? Icons.remove_red_eye_outlined : Icons.remove_red_eye,
-                        color: !showPassword ?  Colors.deepPurple.shade700 :  Colors.grey.shade400,
+                        loginFormProvider.showPassword ? Icons.remove_red_eye_outlined : Icons.remove_red_eye,
+                        color: !loginFormProvider.showPassword ?  Colors.deepPurple.shade700 :  Colors.grey.shade400,
                       ),
-                      onPressed: (){
-                        setState(() {
-                          showPassword = !showPassword;
-                        });
-                      },
+                      onPressed: () => loginFormProvider.showPassword = !loginFormProvider.showPassword,
                     ),
                   ),
                   keyboardType: TextInputType.text,
-                  obscureText: showPassword,
+                  obscureText: loginFormProvider.showPassword,
                   obscuringCharacter: '*',
                   autovalidateMode: AutovalidateMode.onUserInteraction,
-                  onFieldSubmitted: (value) {
-                    print('Doing the petition...');
+                  onChanged: (value) {
+                    loginFormProvider.password =  value;
+                    if(!authService.validPassword) authService.validPassword = true;
                   },
-                  onChanged: (value) => loginFormProvider.password =  value,
                   validator: (value) {
                       if(value == ''){
                         return 'This field is required';
@@ -143,25 +130,50 @@ class _LoginFormState extends State<LoginForm> {
                   borderRadius: 10.0,
                   width: 20,
                   height: 50,
-                  text: loginFormProvider.isLoading == true ? 'Wait...' : 'Sign in',
+                  text: !authService.validating ? 'Sign in' : '',
                   textColor: Colors.white,
                   backgroundColor: Colors.purple.shade900,
-                  onClick: loginFormProvider.isLoading ? null : () async {
-                    emailFnode.unfocus();
-                    FocusScope.of(context).requestFocus(passwordFnode);
+                  onClick: authService.validating ? null : () async {
+                    loginFormProvider.emailFnode.unfocus();
+                    FocusScope.of(context).requestFocus(loginFormProvider.passwordFnode);
                     FocusScope.of(context).unfocus();
-                    if(!loginFormProvider.isValidForm()) return;
-                    loginFormProvider.isLoading = true;
-                    Navigator.pushReplacementNamed(context, 'home');
-                  }
+                    final valid = loginFormProvider.isValidForm();
+                    if(valid){
+                      await authService.signIn(User(email: loginFormProvider.email, password:loginFormProvider.password)).then((value) {
+                        switch (value) {
+                          case "EMAIL_NOT_FOUND":
+                            authService.validEmail = false;
+                            break;
+                          case "INVALID_PASSWORD":
+                          authService.validPassword = false;
+                            break;
+                          case "true":
+                          Navigator.pushReplacementNamed(context, "home");
+                        }
+                      });
+                    }
+                  },
+                  child: authService.validating ? const CircularProgressIndicator.adaptive() : null
                 )
               ],
              ),
            )
           ),
-          const Padding(
-            padding:  EdgeInsets.only(top: 15),
-            child:  Text("Don't have account? register now"),
+           Padding(
+            padding:  const EdgeInsets.only(top: 15),
+            child:  RichText(
+              text:  TextSpan(
+                children: [
+                  TextSpan(text: "Don't have an account? ",style: TextStyle(color: Colors.grey.shade500)),
+                  TextSpan(
+                    text: "Register now", 
+                    style: TextStyle(
+                      color: Colors.blue.shade600,), 
+                      recognizer: TapGestureRecognizer()..onTap = () => Navigator.pushReplacementNamed(context, "register")
+                    ),
+                ]
+              ),
+            ),
           )
         ],
       ),

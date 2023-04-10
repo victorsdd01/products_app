@@ -12,7 +12,8 @@ class CustomButtom extends StatelessWidget {
     this.height,
     required this.text,
     this.textColor,
-    this.backgroundColor
+    this.backgroundColor,
+    this.child,
   });
 
 
@@ -23,6 +24,7 @@ class CustomButtom extends StatelessWidget {
   final String text;
   final Color? textColor;
   final Color? backgroundColor;
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +37,7 @@ class CustomButtom extends StatelessWidget {
       disabledColor: Colors.grey.shade500,
       minWidth: width != null ? width! * 10 : 0,
       height: height,
-      child: Text(text,style: TextStyle(
+      child: child ?? Text(text,style: TextStyle(
           color: textColor ??  Colors.black
         ),
       ),
