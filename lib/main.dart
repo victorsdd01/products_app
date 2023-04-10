@@ -16,6 +16,8 @@ void main() async {
         ChangeNotifierProvider(create: (context) => LoginFormProvider()),
         ChangeNotifierProvider(create: (context) => ProductsProvider()),
         ChangeNotifierProvider(create: (context) => ProductServices()),
+        ChangeNotifierProvider(create: (context) => AuthService()),
+        ChangeNotifierProvider(create: (context) => SignUpProvider()),
       ],
       child: const MyApp(),
     )
