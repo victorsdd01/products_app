@@ -1,5 +1,4 @@
-
-
+// ignore_for_file: file_names
 
 import 'package:productos_app/src/ui/pages/pages.dart';
 

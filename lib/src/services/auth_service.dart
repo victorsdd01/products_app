@@ -6,8 +6,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:productos_app/src/models/models.dart';
-import 'package:productos_app/src/ui/pages/pages.dart';
-
 class AuthService extends ChangeNotifier{
   Dio dio = Dio();
 
@@ -67,6 +65,7 @@ class AuthService extends ChangeNotifier{
         }
       );
       AuthLogin authLogin = AuthLogin.fromMap(response.data);
+      await secureStorage.write(key: "id_token", value: authLogin.idToken);
       _validating = false;
       notifyListeners();
       return authLogin.registered.toString();
@@ -84,7 +83,9 @@ class AuthService extends ChangeNotifier{
       await secureStorage.delete(key: "id_token");
       return true;
     } on Exception catch(e){
-      print("error trying to delete token $e ❌");
+      if (kDebugMode) {
+        print("error trying to delete token $e ❌");
+      }
       return false;
     }
   } 

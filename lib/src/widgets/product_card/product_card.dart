@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:productos_app/src/services/product_services.dart';
 import 'package:productos_app/src/ui/pages/pages.dart';
 import 'package:provider/provider.dart';
@@ -63,7 +64,9 @@ class ProductCard extends StatelessWidget {
               child: Checkbox(
                 value: true, 
                 onChanged: (value){
-                  print("value: $value");
+                  if (kDebugMode) {
+                    print("value: $value");
+                  }
                 }
               )
             )

@@ -33,6 +33,7 @@ class Auth {
     "refreshToken": refreshToken,
     "expiresIn": expiresIn,
     "localId": localId,
+    "returnSecureToken" : true,
   };
 
 }
@@ -71,6 +72,7 @@ class AuthLogin{
     "displayName": displayName,
     "idToken": idToken,
     "registered": registered,
+    "returnSecureToken" : true,
   };
   
 }

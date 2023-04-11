@@ -17,7 +17,6 @@ class CheckingAuth extends StatelessWidget {
             return const Center(child: CircularProgressIndicator.adaptive(),);
           }
           if(snapshot.data == 'no-token'){
-            print("no token available");
             Future.microtask(() {
               Navigator.pushReplacement(context, PageRouteBuilder(
                 pageBuilder:(_, __, ___) => const LoginPage(),
@@ -25,7 +24,6 @@ class CheckingAuth extends StatelessWidget {
               ));
             });
           }else{
-            print("token value:${snapshot.data}");
             Future.microtask(() {
               Navigator.pushReplacement(context, PageRouteBuilder(
                 pageBuilder:(_, __, ___) => const HomePage(),
@@ -38,27 +36,4 @@ class CheckingAuth extends StatelessWidget {
       )
     );
   }
-}
-
-Widget done(AsyncSnapshot<String> snapshot, BuildContext context){
-  if(snapshot.hasData){
-    switch (snapshot.data) {
-      case "no-token":
-        print("no tienes token");
-        Navigator.of(context).pushReplacementNamed("login");
-        break;
-      default:
-        print("tiene token");
-        Navigator.of(context).pushReplacementNamed("home");
-        break;
-    }
-    // hay data
-  }else if(!snapshot.hasData){
-    //ocurrio un error
-    print("ocrrio un error");
-  }else{
-    print("no hay data");
-    // no hay data
-  }
-  return const SizedBox();
 }
