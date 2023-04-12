@@ -64,7 +64,7 @@ class HomePage extends StatelessWidget {
                   child: Text('No data'),
                 )  
               : ListView.builder(
-                    itemCount:productService.products.length,
+                    itemCount: productService.products.length,
                     itemBuilder: (context, index) {
                       final product =  productService.products[index];
                       return GestureDetector(
@@ -95,9 +95,8 @@ class HomePage extends StatelessWidget {
           backgroundColor: Colors.deepPurple.shade500,
           onPressed: () async {
             await showModalBottomSheet(
-              enableDrag: true,
+              context: context,
               isScrollControlled: true,
-              useSafeArea: true,
               isDismissible: false,
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
@@ -105,190 +104,196 @@ class HomePage extends StatelessWidget {
                   topRight: Radius.circular(10.0)
                 )
               ),
-              context: context, 
               builder: (context) {
                   final ProductsProvider productsProvider =  Provider.of<ProductsProvider>(context);
-                  return SingleChildScrollView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    child: Form(
-                      key: productsProvider.productsFormKey,
-                      child: Column(
-                        children: [
-                          GestureDetector(
-                            onTap: () async => await productService.putImageFromGallery(),
-                            child: Stack(
-                              children:[
-                                (productService.selectedImage) != null 
-                                ? 
-                                Container(
-                                  clipBehavior: Clip.antiAlias,
-                                  margin: const EdgeInsets.only(top: 10.0),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10.0),        
-                                  ),
-                                  width: size.width *0.90,
-                                  height: size.height * 0.30,
-                                  child: Image.asset(productService.selectedImage!.path, fit: BoxFit.cover,)
-                                ) 
-                                :
-                                Container(
-                                  clipBehavior: Clip.antiAlias,
-                                  margin: const EdgeInsets.only(top: 10.0),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    color:  Colors.grey.shade500,
-                                    
-                                  ),
-                                  width: size.width *0.90,
-                                  height: size.height * 0.30,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.photo, color: Colors.grey.shade300,size: 60.0,),
-                                        Text('Select photo', style: TextStyle(color: Colors.grey.shade300),)
-                                      ],
-                                    ),
-                                  )
-                                ),
-                                Positioned(
-                                  top: 10,
-                                  left: 0,
-                                  child: IconButton(
-                                    splashColor: Colors.transparent,
-                                    onPressed: () {
-                                      if(productsProvider.getProductName.isNotEmpty && productsProvider.getProductPrice.isNotEmpty){
-                                        Alerts.onClosing(context);
-                                      } else{
-                                          Navigator.of(context).pop();
-                                        }
-                                    }, 
-                                    icon: const Icon(Icons.keyboard_arrow_left_outlined,color: Colors.white, size: 30,)
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 20,),
-                          Padding(
-                            padding: const EdgeInsets.only(left:8.0, right: 8.0),
-                            child: TextFormField(
-                              autovalidateMode: AutovalidateMode.onUserInteraction,
-                              focusNode: productsProvider.productNamefn,
-                              autofocus: productsProvider.autoFocusProducName,
-                              textInputAction: TextInputAction.next,
-                              cursorColor: Colors.deepPurple.shade400,
-                              decoration: const InputDecoration(
-                                label: Text('Product name'),
-                                hintText: 'Product name',
-                              ),
-                              onEditingComplete: () {
-                                productsProvider.setIsEnablePrice = true;
-                                productsProvider.productNamefn.unfocus();
-                                FocusScope.of(context).requestFocus(productsProvider.productPricefn);
-                              },
-                              onChanged: (value) {
-                                if(value.isNotEmpty){
-                                  productsProvider.setProductName = value;
-                                }
-                              },
-                              validator: (value){
-                                if(value == ''){
-                                  return 'This field is required';
-                                }else{
-                                  return null ;
-                                }
-                              },
-                              
-                            ),
-                          ),
-                          const SizedBox(height: 20,),
-                          Padding(
-                            padding: const EdgeInsets.only(left:8.0, right:8.0),
-                            child: TextFormField(
-                              autovalidateMode: AutovalidateMode.onUserInteraction,
-                              focusNode: productsProvider.productPricefn,
-                              onChanged: (value) => productsProvider.setProducPrice = value,
-                              //enabled: productsProvider.isEnablePrice,
-                              keyboardType: TextInputType.number,
-                              cursorColor: Colors.deepPurple.shade400,
-                              decoration: const InputDecoration(
-                                label: Text('Product price'),
-                                hintText: 'Product price',
-                              ),
-                              validator: (value) {
-                                if(value == ''){
-                                  return 'This field is required';
-                                }else{
-                                  return null ;
-                                }
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 20,),
-                          Padding(
-                            padding: const EdgeInsets.only(left:8.0, right:8.0),
-                            child: TextFormField(
-                              autovalidateMode: AutovalidateMode.onUserInteraction,
-                              focusNode: productsProvider.productDescriptionfn,
-                              onChanged: (value) => productsProvider.setProductDescription = value,
-                              keyboardType: TextInputType.text,
-                              cursorColor: Colors.deepPurple.shade400,
-                              decoration: const InputDecoration(
-                                label: Text('Description'),
-                                hintText: 'Write a description',
-                              ),
-                              validator: (value) {
-                                if(value == ''){
-                                  return 'This field is required';
-                                }else{
-                                  return null ;
-                                }
-                              },
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  return DraggableScrollableSheet(
+                    expand: false,
+                    initialChildSize:0.90,
+                    maxChildSize: 0.95,
+                    minChildSize: 0.40,
+                    builder: (context, scrollController) {
+                      return SingleChildScrollView(
+                        controller: scrollController,
+                        child: Form(
+                          key: productsProvider.productsFormKey,
+                          child: Column(
                             children: [
-                              const Text('Available'),
-                              Switch.adaptive(
-                                value: productsProvider.isAvailable, 
-                                onChanged: (value) {
-                                  productsProvider.setIsAvailableSet = value;
-                                }                   
+                              GestureDetector(
+                                onTap: () async => await productService.putImageFromGallery(),
+                                child: Stack(
+                                  children:[
+                                    (productService.selectedImage) != null 
+                                    ? 
+                                    Container(
+                                      clipBehavior: Clip.antiAlias,
+                                      margin: const EdgeInsets.only(top: 10.0),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10.0),        
+                                      ),
+                                      width: size.width *0.90,
+                                      height: size.height * 0.30,
+                                      child: Image.asset(productService.selectedImage!.path, fit: BoxFit.cover,)
+                                    ) 
+                                    :
+                                    Container(
+                                      clipBehavior: Clip.antiAlias,
+                                      margin: const EdgeInsets.only(top: 10.0),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10.0),
+                                        color:  Colors.grey.shade500,
+                                        
+                                      ),
+                                      width: size.width *0.90,
+                                      height: size.height * 0.30,
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.photo, color: Colors.grey.shade300,size: 60.0,),
+                                            Text('Select photo', style: TextStyle(color: Colors.grey.shade300),)
+                                          ],
+                                        ),
+                                      )
+                                    ),
+                                    Positioned(
+                                      top: 10,
+                                      left: 0,
+                                      child: IconButton(
+                                        splashColor: Colors.transparent,
+                                        onPressed: () {
+                                          if(productsProvider.getProductName.isNotEmpty && productsProvider.getProductPrice.isNotEmpty){
+                                            Alerts.onClosing(context);
+                                          } else{
+                                              Navigator.of(context).pop();
+                                            }
+                                        }, 
+                                        icon: const Icon(Icons.keyboard_arrow_left_outlined,color: Colors.white, size: 30,)
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(height: 20,),
+                              Padding(
+                                padding: const EdgeInsets.only(left:8.0, right: 8.0),
+                                child: TextFormField(
+                                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                                  focusNode: productsProvider.productNamefn,
+                                  autofocus: productsProvider.autoFocusProducName,
+                                  textInputAction: TextInputAction.next,
+                                  cursorColor: Colors.deepPurple.shade400,
+                                  decoration: const InputDecoration(
+                                    label: Text('Product name'),
+                                    hintText: 'Product name',
+                                  ),
+                                  onEditingComplete: () {
+                                    productsProvider.setIsEnablePrice = true;
+                                    productsProvider.productNamefn.unfocus();
+                                    FocusScope.of(context).requestFocus(productsProvider.productPricefn);
+                                  },
+                                  onChanged: (value) {
+                                    if(value.isNotEmpty){
+                                      productsProvider.setProductName = value;
+                                    }
+                                  },
+                                  validator: (value){
+                                    if(value == ''){
+                                      return 'This field is required';
+                                    }else{
+                                      return null ;
+                                    }
+                                  },
+                                  
+                                ),
+                              ),
+                              const SizedBox(height: 20,),
+                              Padding(
+                                padding: const EdgeInsets.only(left:8.0, right:8.0),
+                                child: TextFormField(
+                                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                                  focusNode: productsProvider.productPricefn,
+                                  onChanged: (value) => productsProvider.setProducPrice = value,
+                                  textInputAction: TextInputAction.next,
+                                  cursorColor: Colors.deepPurple.shade400,
+                                  decoration: const InputDecoration(
+                                    label: Text('Product price'),
+                                    hintText: 'Product price',
+                                  ),
+                                  validator: (value) {
+                                    if(value == ''){
+                                      return 'This field is required';
+                                    }else{
+                                      return null ;
+                                    }
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 20,),
+                              Padding(
+                                padding: const EdgeInsets.only(left:8.0, right:8.0),
+                                child: TextFormField(
+                                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                                  focusNode: productsProvider.productDescriptionfn,
+                                  onChanged: (value) => productsProvider.setProductDescription = value,
+                                  keyboardType: TextInputType.text,
+                                  cursorColor: Colors.deepPurple.shade400,
+                                  decoration: const InputDecoration(
+                                    label: Text('Description'),
+                                    hintText: 'Write a description',
+                                  ),
+                                  validator: (value) {
+                                    if(value == ''){
+                                      return 'This field is required';
+                                    }else{
+                                      return null ;
+                                    }
+                                  },
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  const Text('Available'),
+                                  Switch.adaptive(
+                                    value: productsProvider.isAvailable, 
+                                    onChanged: (value) {
+                                      productsProvider.setIsAvailableSet = value;
+                                    }                   
+                                  ),
+                                ],
+                              ),
+                              CustomButtom(
+                                backgroundColor:productsProvider.disableButtom ? Colors.grey.shade300 : Colors.deepPurple.shade400,  
+                                textColor: Colors.white,
+                                text: 'Save',
+                                borderRadius: 10.0,
+                                onClick: productsProvider.disableButtom ? null : () async {
+                                  final result = productsProvider.validForm();
+                                  if(result){
+                                    final resp = await productService.addNewProduct(
+                                      Products(
+                                        name: productsProvider.producName, 
+                                        image: (productService.selectedImage?.path) != null ? productService.selectedImage!.path : "no image", 
+                                        price: double.parse(productsProvider.producPrice), 
+                                        description: productsProvider.productDescription, 
+                                        isAvailable: productsProvider.isAvailable
+                                      )
+                                    );
+                                    if(resp){
+                                      productsProvider.clearState();
+                                      productService.setSelectedImage = null;
+                                      Navigator.pop(context);
+                                    }
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 20,),
                             ],
-                          ),
-                          CustomButtom(
-                            backgroundColor:productsProvider.disableButtom ? Colors.grey.shade300 : Colors.deepPurple.shade400,  
-                            textColor: Colors.white,
-                            text: 'Save',
-                            borderRadius: 10.0,
-                            onClick: productsProvider.disableButtom ? null : () async {
-                              final result = productsProvider.validForm();
-                              if(result){
-                                final resp = await productService.addNewProduct(
-                                  Products(
-                                    name: productsProvider.producName, 
-                                    image: (productService.selectedImage?.path) != null ? productService.selectedImage!.path : "no image", 
-                                    price: double.parse(productsProvider.producPrice), 
-                                    description: productsProvider.productDescription, 
-                                    isAvailable: productsProvider.isAvailable
-                                  )
-                                );
-                                if(resp){
-                                  productsProvider.clearState();
-                                  productService.setSelectedImage = null;
-                                  Navigator.pop(context);
-                                }
-                              }
-                            },
-                          ),
-                          const SizedBox(height: 20,),
-                        ],
-                      )
-                    ),
+                          )
+                        ),
+                      );
+                    },
                   );
               }
             );
@@ -307,22 +312,22 @@ class HomePage extends StatelessWidget {
     } 
     void seeProduct(Size size, Products product, BuildContext context) async {
       await showModalBottomSheet(
-        enableDrag: true,
         isScrollControlled: true,
-        useSafeArea: true,
         isDismissible: false,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(10.0),topRight: Radius.circular(10.0))),
         context: context, 
         builder: (context) => DraggableScrollableSheet(
           expand: false,
-          initialChildSize: 0.85,
-          maxChildSize: 1,
+          initialChildSize: 0.90,
+          maxChildSize: 0.95,
           minChildSize: 0.40,
           builder: (context, scrollController) {
+
             final ProductsProvider productsProvider =  Provider.of<ProductsProvider>(context);
-            final ProductServices productsServices =  Provider.of<ProductServices>(context);
+            final ProductServices  productsServices =  Provider.of<ProductServices>(context);
+
             return SingleChildScrollView(
-              physics: const NeverScrollableScrollPhysics(),
+              controller: scrollController,
               child: Form(
                 key: productsProvider.productsFormKey,
                 child: Column(
@@ -466,8 +471,8 @@ class HomePage extends StatelessWidget {
                           }
                           product.price = value.isNotEmpty ? double.parse(value) : 0.0;
                         },
-                        //enabled: productsProvider.isEnablePrice,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        textInputAction: TextInputAction.next,
+                        keyboardType: TextInputType.text,
                         cursorColor: Colors.deepPurple.shade400,
                         decoration: const InputDecoration(
                           label: Text('Product price'),

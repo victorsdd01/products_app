@@ -37,7 +37,7 @@ class ProductServices extends ChangeNotifier {
     loadProducts();
   }
 
-  Future<List<Products>> loadProducts() async {
+  Future<void> loadProducts() async {
     try {
       final response = await dio.get('$baseUrl/products.json',queryParameters: {
         "auth" : await secureStorage.read(key: "id_token")
@@ -58,12 +58,11 @@ class ProductServices extends ChangeNotifier {
         _productListIsEmpty = true;
         notifyListeners();
       }
-      return products;
-    } on Exception{
+    } on DioError catch(e){
+      PermissionDenied authError = PermissionDenied.fromMap(e.response!.data);
       if (kDebugMode) {
-        print("something wrong to get all product list ❌");
+        print("something wrong to get all product list ❌ ${authError.error}");
       }
-      return [];
     }
   }
 
@@ -76,9 +75,10 @@ class ProductServices extends ChangeNotifier {
         products[index] = product;
         notifyListeners();
         return true;
-      } on Exception{
+      } on DioError catch(e){
         if (kDebugMode) {
           print("something wrong trying to update the product ${product.id} ❌");
+          print("error: ${e.response!.data}");
         }
         return false;
       }
@@ -95,9 +95,10 @@ class ProductServices extends ChangeNotifier {
       _productListIsEmpty = false;
       notifyListeners();
       return true;
-    }on Exception{
+    }on DioError catch(e){
+      PermissionDenied authError = PermissionDenied.fromMap(e.response!.data);
       if (kDebugMode) {
-        print("something wrong to add new product ❌");
+        print("something wrong to add new product ❌ ${authError.error}");
       }
       return false;
     }

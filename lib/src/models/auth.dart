@@ -33,7 +33,6 @@ class Auth {
     "refreshToken": refreshToken,
     "expiresIn": expiresIn,
     "localId": localId,
-    "returnSecureToken" : true,
   };
 
 }
@@ -72,7 +71,6 @@ class AuthLogin{
     "displayName": displayName,
     "idToken": idToken,
     "registered": registered,
-    "returnSecureToken" : true,
   };
   
 }
@@ -91,4 +89,17 @@ class AuthError {
     code: json['code'], 
     message: json['message']
   );
+}
+
+class PermissionDenied {
+
+  String error;
+  PermissionDenied({
+    required this.error,
+  });
+
+  factory PermissionDenied.fromMap(Map<String,dynamic> json) => PermissionDenied(
+    error: json['error'],
+  );
+
 }

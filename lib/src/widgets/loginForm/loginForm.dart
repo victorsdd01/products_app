@@ -60,12 +60,6 @@ class LoginForm extends StatelessWidget {
                     prefixIcon: Icon(Icons.email, color: loginFormProvider.isEnableEmail ? Colors.deepPurple.shade700 : Colors.grey.shade400,),
                     hintText: 'Email',
                     errorText: authService.validEmail ? null : 'Incorrect email',
-                    // enabledBorder: authService.validEmail
-                    // ? OutlineInputBorder(
-                    //     borderSide: BorderSide(color: Colors.green.shade300,),
-                    //     borderRadius: BorderRadius.circular(20)
-                    //   )
-                    // : null
                   ),
                   onFieldSubmitted: (value) {
                     loginFormProvider.emailFnode.unfocus();
@@ -94,12 +88,6 @@ class LoginForm extends StatelessWidget {
                     labelStyle: TextStyle(color: Colors.deepPurple.shade700  ),
                     hintText: 'Password',
                     prefixIcon: Icon(Icons.password, color: Colors.deepPurple.shade700),
-                    // enabledBorder: authService.validPassword 
-                    // ? OutlineInputBorder(
-                    //   borderSide: BorderSide(color: Colors.green.shade300,),
-                    //   borderRadius: BorderRadius.circular(20)
-                    // )
-                    // : null,
                     suffixIcon: IconButton(
                       icon:  Icon(
                         loginFormProvider.showPassword ? Icons.remove_red_eye_outlined : Icons.remove_red_eye,
@@ -119,8 +107,10 @@ class LoginForm extends StatelessWidget {
                   validator: (value) {
                       if(value == ''){
                         return 'This field is required';
+                      }else if (value!.length <= 5){
+                        return 'Min: 6 characters' ;
                       }else{
-                        return null ;
+                        return null;
                       }
                   },
                   
