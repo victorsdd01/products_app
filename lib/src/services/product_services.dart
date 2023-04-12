@@ -3,14 +3,17 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:productos_app/src/models/models.dart';
-import 'package:productos_app/src/ui/pages/pages.dart';
+
 
 class ProductServices extends ChangeNotifier {
 
   final String baseUrl = "https://productsapp-27b6d-default-rtdb.firebaseio.com";
   final Dio dio = Dio();
+  final secureStorage = const FlutterSecureStorage();
   List<Products> products = [];
   List<String> productsId = [];
   File? selectedImage;
@@ -34,9 +37,11 @@ class ProductServices extends ChangeNotifier {
     loadProducts();
   }
 
-  Future<List<Products>> loadProducts() async {
+  Future<void> loadProducts() async {
     try {
-      final response = await dio.get('$baseUrl/products.json');
+      final response = await dio.get('$baseUrl/products.json',queryParameters: {
+        "auth" : await secureStorage.read(key: "id_token")
+      });
       if(response.data != null){
         final Map<String, dynamic> productMap = response.data;
         productMap.forEach((key, value) {
@@ -53,44 +58,57 @@ class ProductServices extends ChangeNotifier {
         _productListIsEmpty = true;
         notifyListeners();
       }
-      return products;
-    } on Exception{
-      print("something wrong to get all product list ❌");
-      return [];
+    } on DioError catch(e){
+      PermissionDenied authError = PermissionDenied.fromMap(e.response!.data);
+      if (kDebugMode) {
+        print("something wrong to get all product list ❌ ${authError.error}");
+      }
     }
   }
 
     Future<bool> updateProduct(Products product) async {
       try{
-        await dio.put('$baseUrl/products/${product.id}.json', data: jsonEncode(product.topMap()));
+        await dio.put('$baseUrl/products/${product.id}.json', data: jsonEncode(product.topMap()),queryParameters: {
+          "auth" : await secureStorage.read(key: "id_token")
+        });
         final index = products.indexWhere((element) => element.id == product.id);
         products[index] = product;
         notifyListeners();
         return true;
-      } on Exception{
-        print("something wrong trying to update the product ${product.id} ❌");
+      } on DioError catch(e){
+        if (kDebugMode) {
+          print("something wrong trying to update the product ${product.id} ❌");
+          print("error: ${e.response!.data}");
+        }
         return false;
       }
   }
 
   Future<bool> addNewProduct(Products product) async {
     try{
-      final resp = await dio.post('$baseUrl/products.json', data: jsonEncode(product.topMap()));
+      final resp = await dio.post('$baseUrl/products.json', data: jsonEncode(product.topMap()),queryParameters: {
+        "auth" : await secureStorage.read(key: "id_token")
+      });
       product.id =  resp.data['name'];
       products.add(product);
       productsId.add(product.id!);
       _productListIsEmpty = false;
       notifyListeners();
       return true;
-    }on Exception{
-      print("something wrong to add new product ❌");
+    }on DioError catch(e){
+      PermissionDenied authError = PermissionDenied.fromMap(e.response!.data);
+      if (kDebugMode) {
+        print("something wrong to add new product ❌ ${authError.error}");
+      }
       return false;
     }
   }
 
   Future<bool> deleteProduct(String id) async {
     try{
-      await dio.delete('$baseUrl/products/$id.json',data:{"id": id});
+      await dio.delete('$baseUrl/products/$id.json',data:{"id": id},queryParameters: {
+        "auth" : await secureStorage.read(key: "id_token")
+      });
       final index = products.indexWhere((element) => element.id == id);
       products.removeAt(index);
       if(products.isEmpty){
@@ -99,20 +117,26 @@ class ProductServices extends ChangeNotifier {
       notifyListeners();
       return true;
     }on Exception {
-      print("something wrong to delete $id product ❌");
+      if (kDebugMode) {
+        print("something wrong to delete $id product ❌");
+      }
       return false;
     }
   }
 
   Future<bool> deleteAllProducts() async {
     try{
-      await dio.delete('$baseUrl/products.json',data:{ "ids": productsId});
+      await dio.delete('$baseUrl/products.json',data:{ "ids": productsId},queryParameters: {
+        "auth" : await secureStorage.read(key: "id_token")
+      });
       products = [];
       _productListIsEmpty = true;
       notifyListeners();
       return true;
     }on Exception{
-      print("something wrong to delete all products ❌");
+      if (kDebugMode) {
+        print("something wrong to delete all products ❌");
+      }
       return false;
     }
   }
@@ -124,10 +148,14 @@ class ProductServices extends ChangeNotifier {
       if(image != null){
         selectedImage = File(image.path);
         notifyListeners();
-        print("image: $selectedImage");
+        if (kDebugMode) {
+          print("image: $selectedImage");
+        }
       }
     }on Exception {
-      print("something wrong trying to select an image from gallery adding a new project ❌");
+      if (kDebugMode) {
+        print("something wrong trying to select an image from gallery adding a new project ❌");
+      }
     }
   }
 
@@ -138,13 +166,17 @@ class ProductServices extends ChangeNotifier {
       if(image != null){
         selectedImage = File(image.path);
         product.image = selectedImage!.path;
-        await dio.put('$baseUrl/products/${product.id}.json',data: jsonEncode(product.topMap()));
+        await dio.put('$baseUrl/products/${product.id}.json',data: jsonEncode(product.topMap()),queryParameters: {
+          "auth" : await secureStorage.read(key: "id_token")
+        });
         final index = products.indexWhere((element) => element.id == product.id);
         products[index].image = selectedImage!.path;
         notifyListeners();
       }
     }on Exception catch(e){
-      print("something wrong to get image from gallery ❌ $e");
+      if (kDebugMode) {
+        print("something wrong to get image from gallery ❌ $e");
+      }
     }
   }
 }

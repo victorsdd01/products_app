@@ -4,15 +4,15 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:productos_app/src/models/models.dart';
-import 'package:productos_app/src/ui/pages/pages.dart';
-
 class AuthService extends ChangeNotifier{
   Dio dio = Dio();
 
   final String _signUp = "https://identitytoolkit.googleapis.com";
   final String _signIn = "https://identitytoolkit.googleapis.com";
   final _firebaseToken = "AIzaSyD08T1aWCVYdlyIgxc9Q7EisTki5gRYwj0";
+  final secureStorage  = const FlutterSecureStorage(); 
   bool _validating = false;
 
   bool _validEmail    = true;
@@ -42,6 +42,7 @@ class AuthService extends ChangeNotifier{
         "key":_firebaseToken,
       });
       Auth authData = Auth.fromMap(request.data);
+      await secureStorage.write(key: "id_token", value: authData.idToken);
       _validating = false;
       notifyListeners();
       return authData.idToken;
@@ -64,6 +65,7 @@ class AuthService extends ChangeNotifier{
         }
       );
       AuthLogin authLogin = AuthLogin.fromMap(response.data);
+      await secureStorage.write(key: "id_token", value: authLogin.idToken);
       _validating = false;
       notifyListeners();
       return authLogin.registered.toString();
@@ -75,4 +77,17 @@ class AuthService extends ChangeNotifier{
       return authError.message;
     }
   }
+
+  Future<bool> logOut() async {
+    try{
+      await secureStorage.delete(key: "id_token");
+      return true;
+    } on Exception catch(e){
+      if (kDebugMode) {
+        print("error trying to delete token $e ❌");
+      }
+      return false;
+    }
+  } 
+  Future<String> readToken() async => await secureStorage.read(key: "id_token") ?? 'no-token';
 }

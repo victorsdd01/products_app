@@ -13,6 +13,7 @@ class NewUser{
   Map<String, dynamic> toMap() => {
     "email": email,
     "password": password,
+    "returnSecureToken" : true,
   };
   
 }
@@ -30,5 +31,6 @@ class User{
   Map<String,dynamic> toMap() => {
     "email":email,
     "password":password,
+    "returnSecureToken" : true,
   };
 }

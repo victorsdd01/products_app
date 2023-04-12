@@ -90,3 +90,16 @@ class AuthError {
     message: json['message']
   );
 }
+
+class PermissionDenied {
+
+  String error;
+  PermissionDenied({
+    required this.error,
+  });
+
+  factory PermissionDenied.fromMap(Map<String,dynamic> json) => PermissionDenied(
+    error: json['error'],
+  );
+
+}
